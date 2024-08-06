@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система продаж - Frontol v6.22.3 Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/mainstyles2.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!--<script src="/static/js/lucide.js"></script>-->
+</head>
+<body>
+    <main class="main-content">
+        <div class="action-bar">
+            <div class="transaction-type">
+                <label for="transaction-select">Тип операции:</label>
+                <select id="transaction-select" name="transaction-type">
+                    <option value="sale">Продажа</option>
+                    <option value="return">Возврат</option>
+                </select>
+            </div>
+            <div>
+                <button class="button">Скидка</button>
+                <button class="button">Убрать скидку</button>
+                <button class="button">Отложить чек</button>
+                <button class="button">Найти чек</button>
+            </div>
+        </div>
+
+        <div id="currentInput" class="info-field">
+            
+        </div>
+
+        <div class="info-cards">
+            <div class="card">
+                <h2>Персонал</h2>
+                <div class="select-wrapper">
+                    <select id="master" name="master">
+                        <option value="">Выберите мастера</option>
+                        <option value="1">Иванов И.И.</option>
+                        <option value="2">Петров П.П.</option>
+                        <option value="3">Сидоров С.С.</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <select id="employee" name="employee">
+                        <option value="">Выберите сотрудника</option>
+                        <option value="1">Смирнова А.А.</option>
+                        <option value="2">Козлов К.К.</option>
+                        <option value="3">Васильева В.В.</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Текущий товар</h2>
+                <p id="currentGoodArticleAndCode">Арт.: VT278 | Код: 58</p>
+                <p id="currentGoodName"><strong>КРАН ШАР ГАЗОВЫЙ 1/2"НАР-ВН БАБОЧКА</strong></p>
+                <p id="currentCountPriceSumm">4,000 x 10.00 = 40,00</p>
+            </div>
+
+            <div class="card">
+                <h2>Итого</h2>
+                <p>Карта: <span id="cardNumber">-</span></p>
+                <p>Скидка: <span id="discount">0,00</span></p>
+                <p class="total">К оплате: 670,00р</p>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Товар</th>
+                        <th>Кол-во</th>
+                        <th>Цена</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <span>ЦТО КСМ | РМ №1 | 23:44 RU 05.08.24 18:05:04</span>
+    </footer>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

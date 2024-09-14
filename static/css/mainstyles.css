@@ -9,6 +9,7 @@
     --text-primary: rgba(0,0,0,0.87);
     --text-secondary: rgba(0,0,0,0.6);
     --selected-row-color: #E3F2FD;
+    --accent-color: #4CAF50; /* Добавляем акцентный цвет (зеленый) */
 }
 body {
     font-family: 'Roboto', sans-serif;
@@ -206,4 +207,14 @@ tr.selected {
 
 .notification.info {
     background-color: #2196F3;
+}
+
+.button.accent {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.button.accent:hover {
+    background-color: #45a049; /* Немного темнее при наведении */
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
 }

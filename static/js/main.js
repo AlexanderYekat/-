@@ -247,7 +247,8 @@ function sendTableDataToServer() {
         master: masterSelect.value
     };
 
-    fetch('/api/print-check', {
+    // Отправка данных на локальный ресурс на порт 8081
+    fetch('http://localhost:8081/api/products', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -262,16 +263,16 @@ function sendTableDataToServer() {
     })
     .then(data => {
         console.log('Данные успешно отправлены:', data);
-        showNotification('Чек напечатан', 'success');
-        // Здесь можно добавить дополнительную логику после успешной отправки
-        // Например, очистка таблицы или обновление интерфейса
+        showNotification('Данные успешно отправлены', 'success');
     })
     .catch(error => {
-        console.error('Ошибка при печати чека:', error);
-        showNotification('Ошибка при печати чека', 'error');
-        alert('Ошибка при печати чека')
+        console.error('Ошибка при отправке данных:', error);
+        showNotification('Ошибка при отправке данных', 'error');
     });
 }
+
+// Добавляем обработчик события для кнопки "Печать чека"
+document.querySelector('.button.accent').addEventListener('click', sendTableDataToServer);
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');

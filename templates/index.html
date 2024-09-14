@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система продаж - Frontol v6.22.3 Demo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/mainstyles2.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!--<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
+    <link rel="stylesheet" href="/static/css/mainstyles.css">
+    <!--<script src="https://unpkg.com/lucide@latest"></script>-->
     <!--<script src="/static/js/lucide.js"></script>-->
 </head>
 <body>
@@ -37,42 +37,38 @@
                 <h2>Персонал</h2>
                 <div class="select-wrapper">
                     <select id="master" name="master">
-                        <option value="">Выберите мастера</option>
-                        <option value="1">Иванов И.И.</option>
-                        <option value="2">Петров П.П.</option>
-                        <option value="3">Сидоров С.С.</option>
+                        <option value="">Выберите сантехника</option>
                     </select>
                 </div>
                 <div class="select-wrapper">
                     <select id="employee" name="employee">
                         <option value="">Выберите сотрудника</option>
-                        <option value="1">Смирнова А.А.</option>
-                        <option value="2">Козлов К.К.</option>
-                        <option value="3">Васильева В.В.</option>
                     </select>
                 </div>
             </div>
 
             <div class="card">
                 <h2>Текущий товар</h2>
-                <p id="currentGoodArticleAndCode">Арт.: VT278 | Код: 58</p>
-                <p id="currentGoodName"><strong>КРАН ШАР ГАЗОВЫЙ 1/2"НАР-ВН БАБОЧКА</strong></p>
-                <p id="currentCountPriceSumm">4,000 x 10.00 = 40,00</p>
+                <p id="currentGoodArticleAndCode"></p>
+                <p id="currentGoodName"><strong></strong></p>
+                <p id="currentCountPriceSumm"></p>
             </div>
 
             <div class="card">
                 <h2>Итого</h2>
                 <p>Карта: <span id="cardNumber">-</span></p>
                 <p>Скидка: <span id="discount">0,00</span></p>
-                <p class="total">К оплате: 670,00р</p>
+                <p class="total">К оплате: 0,00р</p>
             </div>
         </div>
 
         <div class="table-container">
-            <table>
+            <table id="productTable">
                 <thead>
                     <tr>
                         <th>№</th>
+                        <th>Код</th>
+                        <th>Артикул</th>
                         <th>Товар</th>
                         <th>Кол-во</th>
                         <th>Цена</th>

@@ -8,6 +8,7 @@
     --error-color: #D32F2F;
     --text-primary: rgba(0,0,0,0.87);
     --text-secondary: rgba(0,0,0,0.6);
+    --selected-row-color: #E3F2FD;
 }
 body {
     font-family: 'Roboto', sans-serif;
@@ -150,6 +151,13 @@ th {
     color: white;
     font-weight: 500;
 }
+tr:hover {
+    background-color: rgba(25, 118, 210, 0.08);
+    cursor: pointer;
+}
+tr.selected {
+    background-color: var(--selected-row-color);
+}
 .selected {
     background-color: rgba(25, 118, 210, 0.08);
 }
@@ -172,4 +180,30 @@ th {
     max-height: 100px;
     overflow-y: auto;
     height: 80px;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification.info {
+    background-color: #2196F3;
 }

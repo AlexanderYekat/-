@@ -14,6 +14,8 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/rs/cors"
 )
 
 type Item struct {
@@ -44,7 +46,11 @@ func main() {
 	//file, _ := os.Create("output.html")
 	//defer file.Close()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Создаем новый маршрутизатор
+	mux := http.NewServeMux()
+
+	// Регистрируем все обработчики на mux вместо http.HandleFunc
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		lp := filepath.Join("templates", "index.html")
 		tmpl := template.Must(template.ParseFiles(lp))
 		//tmpl.Execute(file, nil)
@@ -52,7 +58,7 @@ func main() {
 		tmpl.Execute(w, nil)
 	})
 
-	http.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
 		code := filepath.Base(r.URL.Path)
 		fmt.Println("поиск товара по коду:", code)
 		w.Header().Set("Content-Type", "application/json")
@@ -65,17 +71,17 @@ func main() {
 		fmt.Println("закончили поиск")
 	})
 
-	http.HandleFunc("/sellers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/sellers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(sellers)
 	})
 
-	http.HandleFunc("/plumbers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/plumbers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(plumbers)
 	})
 
-	http.HandleFunc("/api/rukovoditel", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/rukovoditel", func(w http.ResponseWriter, r *http.Request) {
 		result, err := sendAPIRequest()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -97,8 +103,19 @@ func main() {
 	fscss := http.FileServer(http.Dir("static/css"))
 	http.Handle("/static/css/", http.StripPrefix("/static/css/", fscss))
 
+	// Настраиваем CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"}, // Разрешаем все источники
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"*"},
+	})
+
+	// Оборачиваем наш mux в CORS handler
+	handler := c.Handler(mux)
+
+	// Используем handler вместо nil
 	log.Println("Server starting on :8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
 func readCSV(filename string) map[string]Item {

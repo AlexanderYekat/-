@@ -1,10 +1,11 @@
 # Игнорируем все файлы, которые должны быть исключены
 .cursorignore
-kassa.exe
+*.exe
+*.exe.manifest
 static/js/goodslist.js
 static/css/goodslist.css
 templates/goodslist.html
 
 # Исключаем из игнорирования go.sum
 !go.sum
-README.md
+!README.md

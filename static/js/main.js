@@ -255,12 +255,16 @@ function sendTableDataToServer() {
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Request-Private-Network': 'true'
         },
         body: JSON.stringify(dataToSend)
     })
     .then(response => {
         console.log("Статус ответа:", response.status);
-        console.log("Заголовки ответа:", response.headers);
+        console.log("Заголовки ответа:");
+        for (let [key, value] of response.headers) {
+            console.log(`${key}: ${value}`);
+        }
         if (!response.ok) {
             throw new Error('Ошибка сети или сервера');
         }

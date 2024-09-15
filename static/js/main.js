@@ -247,16 +247,20 @@ function sendTableDataToServer() {
         master: masterSelect.value
     };
 
+    console.log("Отправляемые данные:", JSON.stringify(dataToSend));
+
     // Отправка данных на локальный ресурс на порт 8081
     fetch('http://localhost:8081/api/print-check', {
         method: 'POST',
-        mode: 'cors', // Добавьте эту строку
+        mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend)
     })
     .then(response => {
+        console.log("Статус ответа:", response.status);
+        console.log("Заголовки ответа:", response.headers);
         if (!response.ok) {
             throw new Error('Ошибка сети или сервера');
         }
@@ -268,7 +272,7 @@ function sendTableDataToServer() {
     })
     .catch(error => {
         console.error('Ошибка при отправке данных:', error);
-        showNotification('Ошибка при отправке данных', 'error');
+        showNotification('Ошибка при отправке данных: ' + error.message, 'error');
     });
 }
 

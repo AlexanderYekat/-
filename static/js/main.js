@@ -228,6 +228,60 @@ document.addEventListener('keydown', function (event) {
     updateInputDisplay();
 });
 
+let socket = null;
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = 'localhost:8081';
+    socket = new WebSocket(`${protocol}//${host}/ws`);
+
+    socket.onopen = function(e) {
+        console.log("WebSocket соединение установлено");
+    };
+
+    socket.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        handleWebSocketMessage(message);
+    };
+
+    socket.onclose = function(event) {
+        if (event.wasClean) {
+            console.log(`WebSocket соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+        } else {
+            console.log('WebSocket соединение прервано');
+        }
+        // Попытка переподключения через 5 секунд
+        setTimeout(connectWebSocket, 5000);
+    };
+
+    socket.onerror = function(error) {
+        console.log(`WebSocket ошибка ${error.message}`);
+    };
+}
+
+function handleWebSocketMessage(message) {
+    switch(message.type) {
+        case 'printCheckResponse':
+            console.log('Ответ на печать чека:', message.message);
+            showNotification(message.message, 'success');
+            break;
+        case 'error':
+            console.error('Ошибка:', message.message);
+            showNotification(message.message, 'error');
+            break;
+        // ... обработка других типов сообщений ...
+    }
+}
+
+function sendWebSocketMessage(type, data) {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type, data }));
+    } else {
+        console.log('WebSocket не подключен');
+        showNotification('Ошибка соединения с сервером', 'error');
+    }
+}
+
 function sendTableDataToServer() {
     const tableData = Array.from(document.querySelector('table tbody').rows).map(row => ({
         code: row.cells[1].textContent,
@@ -247,33 +301,11 @@ function sendTableDataToServer() {
         master: masterSelect.value
     };
 
-    // Отправка данных на локальный ресурс на порт 8081
-    fetch('http://localhost:8081/api/print-check', {
-        method: 'POST',
-        mode: 'cors', // Добавьте эту строку
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Ошибка сети или сервера');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Данные успешно отправлены:', data);
-        showNotification('Данные успешно отправлены', 'success');
-    })
-    .catch(error => {
-        console.error('Ошибка при отправке данных:', error);
-        showNotification('Ошибка при отправке данных', 'error');
-    });
+    sendWebSocketMessage('printCheck', dataToSend);
 }
 
-// Добавляем обработчик события для кнопки "Печать чека"
-document.querySelector('.button.accent').addEventListener('click', sendTableDataToServer);
+// Вызовите эту функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', connectWebSocket);
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');

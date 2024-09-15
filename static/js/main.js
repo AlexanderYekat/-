@@ -228,6 +228,38 @@ document.addEventListener('keydown', function (event) {
     updateInputDisplay();
 });
 
+let ws;
+
+function connectWebSocket() {
+    ws = new WebSocket('ws://localhost:8081/ws');
+
+    ws.onopen = function() {
+        console.log('WebSocket соединение установлено');
+    };
+
+    ws.onmessage = function(event) {
+        const response = JSON.parse(event.data);
+        if (response.type === 'error') {
+            showNotification(response.message, 'error');
+        } else {
+            showNotification(response.message, 'success');
+        }
+    };
+
+    ws.onerror = function(error) {
+        console.error('WebSocket ошибка:', error);
+        showNotification('Ошибка WebSocket соединения', 'error');
+    };
+
+    ws.onclose = function() {
+        console.log('WebSocket соединение закрыто');
+        setTimeout(connectWebSocket, 5000); // Попытка переподключения через 5 секунд
+    };
+}
+
+// Вызовите эту функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', connectWebSocket);
+
 function sendTableDataToServer() {
     const tableData = Array.from(document.querySelector('table tbody').rows).map(row => ({
         code: row.cells[1].textContent,
@@ -242,46 +274,53 @@ function sendTableDataToServer() {
     const masterSelect = document.getElementById('master');
 
     const dataToSend = {
-        tableData: tableData,
-        employee: employeeSelect.value,
-        master: masterSelect.value
+        type: 'printCheck',
+        data: {
+            tableData: tableData,
+            employee: employeeSelect.value,
+            master: masterSelect.value
+        }
     };
 
-    console.log("Отправляемые данные:", JSON.stringify(dataToSend));
-
-    // Отправка данных на локальный ресурс на порт 8081
-    fetch('http://localhost:8081/api/print-check', {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Request-Private-Network': 'true'
-        },
-        body: JSON.stringify(dataToSend)
-    })
-    .then(response => {
-        console.log("Статус ответа:", response.status);
-        console.log("Заголовки ответа:");
-        for (let [key, value] of response.headers) {
-            console.log(`${key}: ${value}`);
-        }
-        if (!response.ok) {
-            throw new Error('Ошибка сети или сервера');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Данные успешно отправлены:', data);
-        showNotification('Данные успешно отправлены', 'success');
-    })
-    .catch(error => {
-        console.error('Ошибка при отправке данных:', error);
-        showNotification('Ошибка при отправке данных: ' + error.message, 'error');
-    });
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(dataToSend));
+    } else {
+        showNotification('WebSocket соединение не установлено', 'error');
+    }
 }
 
-// Добавляем обработчик события для кнопки "Печать чека"
+function closeShift() {
+    const employeeSelect = document.getElementById('employee');
+    const dataToSend = {
+        type: 'closeShift',
+        data: {
+            cashier: employeeSelect.value
+        }
+    };
+
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(dataToSend));
+    } else {
+        showNotification('WebSocket соединение не установлено', 'error');
+    }
+}
+
+function printXReport() {
+    const dataToSend = {
+        type: 'xReport'
+    };
+
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(dataToSend));
+    } else {
+        showNotification('WebSocket соединение не установлено', 'error');
+    }
+}
+
+// Обновите обработчики событий для кнопок
 document.querySelector('.button.accent').addEventListener('click', sendTableDataToServer);
+document.getElementById('closeShiftButton').addEventListener('click', closeShift);
+document.getElementById('xReportButton').addEventListener('click', printXReport);
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');

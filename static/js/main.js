@@ -234,12 +234,14 @@ let lastErrorNotificationTime = 0;
 function connectWebSocket() {
     ws = new WebSocket('ws://localhost:8081/ws');
 
-    ws.onopen = function() {
+    ws.onopen = function(e) {
         console.log('WebSocket соединение установлено');
     };
 
     ws.onmessage = function(event) {
+        console.log(`Данные получены с сервера`);
         const response = JSON.parse(event.data);
+        console.log(`Данные получены с сервера: ${event.data}`);
         console.log(response)
         if (response.type === 'error') {
             showNotification(response.message, 'error');
@@ -261,8 +263,13 @@ function connectWebSocket() {
         }
     };
 
-    ws.onclose = function() {
-        console.log('WebSocket соединение закрыто');
+    ws.onclose = function(event) {
+        //console.log('WebSocket соединение закрыто');
+        if (event.wasClean) {
+            console.log(`Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+        } else {
+            console.log('Соединение прервано');
+        }        
         setTimeout(connectWebSocket, 5000); // Попытка переподключения через 5 секунд
     };
 }
@@ -318,13 +325,15 @@ function sendTableDataToServer() {
 function closeShift() {
     const employeeSelect = document.getElementById('employee');
     const dataToSend = {
-        type: 'closeShift',
+        command: 'closeShift',
         data: {
             cashier: employeeSelect.value
         }
     };
+    console.log(dataToSend)
 
     if (ws.readyState === WebSocket.OPEN) {
+        console.log("отправляем команду closeShift")
         ws.send(JSON.stringify(dataToSend));
     } else {
         showNotification('WebSocket соединение не установлено', 'error');
@@ -333,10 +342,12 @@ function closeShift() {
 
 function printXReport() {
     const dataToSend = {
-        type: 'xReport'
+        command: 'xReport'
     };
+    console.log(dataToSend)
 
     if (ws.readyState === WebSocket.OPEN) {
+        console.log("отправляем команду xReport")
         ws.send(JSON.stringify(dataToSend));
     } else {
         showNotification('WebSocket соединение не установлено', 'error');

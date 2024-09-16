@@ -9,3 +9,6 @@ templates/goodslist.html
 # Исключаем из игнорирования go.sum
 !go.sum
 !README.md
+.aider*
+.cursorignore
+.env

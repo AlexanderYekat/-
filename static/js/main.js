@@ -229,6 +229,7 @@ document.addEventListener('keydown', function (event) {
 });
 
 let ws;
+let lastErrorNotificationTime = 0;
 
 function connectWebSocket() {
     ws = new WebSocket('ws://localhost:8081/ws');
@@ -239,16 +240,25 @@ function connectWebSocket() {
 
     ws.onmessage = function(event) {
         const response = JSON.parse(event.data);
+        console.log(response)
         if (response.type === 'error') {
             showNotification(response.message, 'error');
         } else {
-            showNotification(response.message, 'success');
+            let message = response.message;
+            if (response.data !== undefined && response.data !== 0) {
+                message += ` (Номер чека: ${response.data})`;
+            }
+            showNotification(message, 'success');
         }
     };
 
     ws.onerror = function(error) {
-        console.error('WebSocket ошибка:', error);
-        showNotification('Ошибка WebSocket соединения', 'error');
+        console.error('Ошибка WebSocket:', error);
+        const currentTime = Date.now();
+        if (currentTime - lastErrorNotificationTime > 120000) { // 120000 мс = 2 минуты
+            showNotification(`Ошибка подключения кассового аппарата (Ошибка WebSocket: ${error})`, 'error');
+            lastErrorNotificationTime = currentTime;
+        }
     };
 
     ws.onclose = function() {
@@ -271,16 +281,31 @@ function sendTableDataToServer() {
     }));
 
     const employeeSelect = document.getElementById('employee');
-    const masterSelect = document.getElementById('master');
+    const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
+    const cashierName = selectedOption.textContent;
+    //const masterSelect = document.getElementById('master');
+    const totalSum = parseFloat(document.querySelector('.total').textContent.split(':')[1].trim());
+    //тестовое значение
+    cashAmount = totalSum-1
+    cardAmount = 1.00
+    const type = 'sellReturn' //sellReturn
+
+    const payments = [
+        { type: 'cash', amount: cashAmount },
+        { type: 'electronically', amount: cardAmount },
+    ].filter(payment => payment.amount > 0);    
 
     const dataToSend = {
-        type: 'printCheck',
+        command: 'printCheck',
         data: {
             tableData: tableData,
-            employee: employeeSelect.value,
-            master: masterSelect.value
+            cashier: cashierName,
+            payments: payments,
+            type: type,
         }
     };
+
+    console.log(dataToSend)
 
     if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify(dataToSend));
@@ -288,6 +313,7 @@ function sendTableDataToServer() {
         showNotification('WebSocket соединение не установлено', 'error');
     }
 }
+
 
 function closeShift() {
     const employeeSelect = document.getElementById('employee');

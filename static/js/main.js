@@ -248,12 +248,13 @@ function sendTableDataToServer() {
     };
 
     // Отправка данных на локальный ресурс на порт 8081
-    //fetch('http://localhost:8081/api/print-check', {
-    fetch('http://188.225.31.209:8080/api/print-check', {
+    fetch('http://localhost:8081/api/print-check', {
+    //fetch('http://188.225.31.209:8080/api/print-check', {
         method: 'POST',
         mode: 'cors', // Добавьте эту строку
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Request-Private-Network': 'true'
         },
         body: JSON.stringify(dataToSend)
     })

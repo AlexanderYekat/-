@@ -247,29 +247,47 @@ function sendTableDataToServer() {
         master: masterSelect.value
     };
 
-    // Отправка данных на локальный ресурс на порт 8081
-    fetch('http://localhost:8081/api/print-check', {
-    //fetch('http://188.225.31.209:8080/api/print-check', {
+    // Отправка данных на локальный ресурс на порт 8843
+    const url = 'https://localhost:8443/api/print-check';
+    //const url = 'http://188.225.31.209:8080/api/print-check';
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Request-Private-Network': 'true'
+    };
+
+    const requestBody = JSON.stringify(dataToSend);
+
+    // Логируем запрос перед отправкой
+    //logRequest(url, 'POST', headers, requestBody);
+
+    fetch(url, {
         method: 'POST',
-        mode: 'cors', // Добавьте эту строку
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Request-Private-Network': 'true'
-        },
-        body: JSON.stringify(dataToSend)
+        mode: 'cors',
+        headers: headers,
+        body: requestBody
     })
     .then(response => {
+        // Логируем ответ
+        console.log('Ответ сервера:');
+        console.log(`Статус: ${response.status} ${response.statusText}`);
+        console.log('Заголовки ответа:');
+        for (let [key, value] of response.headers) {
+            console.log(`  ${key}: ${value}`);
+        }
+        
         if (!response.ok) {
             throw new Error('Ошибка сети или сервера');
         }
         return response.json();
     })
     .then(data => {
-        console.log('Данные успешно отправлены:', data);
+        console.log('Тело ответа:');
+        console.log(data);
         showNotification('Данные успешно отправлены', 'success');
     })
     .catch(error => {
-        console.error('Ошибка при отправке данных:', error);
+        console.error('Ошибка:', error);
         showNotification('Ошибка при отправке данных', 'error');
     });
 }

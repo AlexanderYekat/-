@@ -30,6 +30,7 @@ Thumbs.db
 install/
 !install/CloudPosBridge_setup.iss
 vendor/
+kassa
 
 # JSON задания
 jsons/works/*.json

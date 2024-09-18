@@ -248,12 +248,13 @@ function sendTableDataToServer() {
     };
 
     // Отправка данных на локальный ресурс на порт 8843
-    const url = 'https://localhost:8443/api/print-check';
+    const url = 'https://127.0.0.1:8443/api/print-check';
     //const url = 'http://188.225.31.209:8080/api/print-check';
 
     const headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Request-Private-Network': 'true'
+        //'Content-Type': 'application/json',
+        'Access-Control-Request-Private-Network': 'true',
+        'access-control-request-headers': 'access-control-request-private-network,content-type'
     };
 
     const requestBody = JSON.stringify(dataToSend);

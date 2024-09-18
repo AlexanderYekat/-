@@ -417,21 +417,64 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Ошибка при загрузке списка сантехников:', error));
 
-    // Добавляем обработчик для кнопки "Скидка"
-    const discountButton = document.querySelector('button.button:nth-child(1)');
-    if (discountButton) {
-        discountButton.addEventListener('click', function() {
-            fetch('http://127.0.0.1:8080/api.php?a=fiscalprinter:atol10:CheckPrintArray&loglevel=1&com=5:-1:-1', {
-                method: 'GET'
+    // Добавляем обработчик для кнопки "Убрать скидку"
+    const removeDiscountButton = document.querySelector('button.button:nth-child(2)');
+    if (removeDiscountButton) {
+        removeDiscountButton.addEventListener('click', function() {
+            const tableData = Array.from(document.querySelector('table tbody').rows).map(row => ({
+                code: row.cells[1].textContent,
+                article: row.cells[2].textContent,
+                name: row.cells[3].textContent,
+                quantity: row.cells[4].textContent,
+                price: row.cells[5].textContent,
+                sum: row.cells[6].textContent
+            }));
+
+            const employeeSelect = document.getElementById('employee');
+            const masterSelect = document.getElementById('master');
+
+            const dataToSend = {
+                tableData: tableData,
+                employee: employeeSelect.value,
+                master: masterSelect.value
+            };
+
+            const url = 'http://127.0.0.1:8080/api/print-check';
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Access-Control-Request-Private-Network': 'true'
+            };
+
+            const requestBody = JSON.stringify(dataToSend);
+
+            fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: headers,
+                body: requestBody
             })
-            .then(response => response.text())
+            .then(response => {
+                console.log('Ответ сервера:');
+                console.log(`Статус: ${response.status} ${response.statusText}`);
+                console.log('Заголовки ответа:');
+                for (let [key, value] of response.headers) {
+                    console.log(`  ${key}: ${value}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сети или сервера');
+                }
+                return response.json();
+            })
             .then(data => {
-                console.log('Ответ на запрос скидки:', data);
-                showNotification('Запрос на скидку отправлен', 'success');
+                console.log('Тело ответа:');
+                console.log(data);
+                showNotification('Скидка убрана', 'success');
             })
             .catch(error => {
-                console.error('Ошибка при отправке запроса на скидку:', error);
-                showNotification('Ошибка при отправке запроса на скидку', 'error');
+                console.error('Ошибка:', error);
+                showNotification('Ошибка при отправке запроса убрать скидку', 'error');
             });
         });
     }

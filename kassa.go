@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -35,9 +36,12 @@ var (
 	itemsMap map[string]Item
 	sellers  []Employee
 	plumbers []Employee
+	useHTTPS = flag.Bool("https", true, "Использовать HTTPS (true) или HTTP (false)")
 )
 
 func main() {
+	flag.Parse()
+
 	itemsMap = readCSV("../goods_briefly.csv")
 	sellers = readEmployees("../sellers.csv")
 	plumbers = readEmployees("../plumbers.csv")
@@ -92,25 +96,31 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Настройка TLS
-	cert, err := tls.LoadX509KeyPair("server.crt", "server.key")
-	if err != nil {
-		log.Fatalf("Ошибка загрузки сертификата и ключа: %v", err)
-	}
+	if *useHTTPS {
+		// Настройка TLS
+		cert, err := tls.LoadX509KeyPair("server.crt", "server.key")
+		if err != nil {
+			log.Fatalf("Ошибка загрузки сертификата и ключа: %v", err)
+		}
 
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
 
-	// Создаем HTTPS сервер
-	server := &http.Server{
-		Addr:      ":8443",
-		Handler:   mux,
-		TLSConfig: tlsConfig,
-	}
+		// Создаем HTTPS сервер
+		server := &http.Server{
+			Addr:      ":8443",
+			Handler:   mux,
+			TLSConfig: tlsConfig,
+		}
 
-	log.Println("Сервер запущен на https://localhost:8443")
-	log.Fatal(server.ListenAndServeTLS("", ""))
+		log.Println("Сервер запущен на https://localhost:8443")
+		log.Fatal(server.ListenAndServeTLS("", ""))
+	} else {
+		// Запускаем HTTP сервер
+		log.Println("Сервер запущен на http://localhost:8080")
+		log.Fatal(http.ListenAndServe(":8080", mux))
+	}
 }
 
 func readCSV(filename string) map[string]Item {

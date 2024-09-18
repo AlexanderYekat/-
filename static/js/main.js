@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const headers = {
                 'Content-Type': 'application/json',
-                'Access-Control-Request-Private-Network': 'true'
+                //'Access-Control-Request-Private-Network': 'true'
             };
 
             const requestBody = JSON.stringify(dataToSend);

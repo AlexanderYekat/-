@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'GET',
                 mode: 'cors',
                 headers: {
-                    'Access-Control-Request-Private-Network': 'true'
+                    //'Access-Control-Request-Private-Network': 'true'
                 }
             })
             .then(response => {

@@ -97,8 +97,8 @@ func main() {
 	fscss := http.FileServer(http.Dir("static/css"))
 	http.Handle("/static/css/", http.StripPrefix("/static/css/", fscss))
 
-	log.Println("Server starting on :8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server starting on :8085...")
+	log.Fatal(http.ListenAndServe(":8085", nil))
 }
 
 func readCSV(filename string) map[string]Item {

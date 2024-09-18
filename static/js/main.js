@@ -416,4 +416,23 @@ document.addEventListener('DOMContentLoaded', function() {
            }
         })
         .catch(error => console.error('Ошибка при загрузке списка сантехников:', error));
+
+    // Добавляем обработчик для кнопки "Скидка"
+    const discountButton = document.querySelector('button.button:nth-child(1)');
+    if (discountButton) {
+        discountButton.addEventListener('click', function() {
+            fetch('http://127.0.0.1:8080/api.php?a=fiscalprinter:atol10:CheckPrintArray&loglevel=1&com=5:-1:-1', {
+                method: 'GET'
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Ответ на запрос скидки:', data);
+                showNotification('Запрос на скидку отправлен', 'success');
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке запроса на скидку:', error);
+                showNotification('Ошибка при отправке запроса на скидку', 'error');
+            });
+        });
+    }
 });

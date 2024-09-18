@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -44,15 +45,17 @@ func main() {
 	//file, _ := os.Create("output.html")
 	//defer file.Close()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Создаем новый мультиплексор
+	mux := http.NewServeMux()
+
+	// Регистрируем обработчики
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		lp := filepath.Join("templates", "index.html")
 		tmpl := template.Must(template.ParseFiles(lp))
-		//tmpl.Execute(file, nil)
-		//fmt.Println("-----")
 		tmpl.Execute(w, nil)
 	})
 
-	http.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/product/", func(w http.ResponseWriter, r *http.Request) {
 		code := filepath.Base(r.URL.Path)
 		fmt.Println("поиск товара по коду:", code)
 		w.Header().Set("Content-Type", "application/json")
@@ -65,17 +68,17 @@ func main() {
 		fmt.Println("закончили поиск")
 	})
 
-	http.HandleFunc("/sellers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/sellers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(sellers)
 	})
 
-	http.HandleFunc("/plumbers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/plumbers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(plumbers)
 	})
 
-	http.HandleFunc("/api/rukovoditel", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/rukovoditel", func(w http.ResponseWriter, r *http.Request) {
 		result, err := sendAPIRequest()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,18 +90,27 @@ func main() {
 
 	// Добавляем обработку статических файлов
 	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Добавляем обработку статических файлов
-	fsjs := http.FileServer(http.Dir("static/js"))
-	http.Handle("/static/js/", http.StripPrefix("/static/js/", fsjs))
+	// Настройка TLS
+	cert, err := tls.LoadX509KeyPair("server.crt", "server.key")
+	if err != nil {
+		log.Fatalf("Ошибка загрузки сертификата и ключа: %v", err)
+	}
 
-	// Добавляем обработку статических файлов
-	fscss := http.FileServer(http.Dir("static/css"))
-	http.Handle("/static/css/", http.StripPrefix("/static/css/", fscss))
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
 
-	log.Println("Server starting on :8085...")
-	log.Fatal(http.ListenAndServe(":8085", nil))
+	// Создаем HTTPS сервер
+	server := &http.Server{
+		Addr:      ":8443",
+		Handler:   mux,
+		TLSConfig: tlsConfig,
+	}
+
+	log.Println("Сервер запущен на https://localhost:8443")
+	log.Fatal(server.ListenAndServeTLS("", ""))
 }
 
 func readCSV(filename string) map[string]Item {

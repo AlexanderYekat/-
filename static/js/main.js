@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 master: masterSelect.value
             };
 
-            const url = 'http://127.0.0.1:8080/api/print-check';
+            const url = 'http://127.0.0.1:8085/api/print-check';
 
             const headers = {
                 'Content-Type': 'application/json',
@@ -475,6 +475,42 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Ошибка:', error);
                 showNotification('Ошибка при отправке запроса убрать скидку', 'error');
+            });
+        });
+    }
+
+    // Добавляем обработчик для кнопки "Скидка"
+    const discountButton = document.querySelector('button.button:nth-child(1)');
+    if (discountButton) {
+        discountButton.addEventListener('click', function() {
+            fetch('http://127.0.0.1:8080/api.php?a=fiscalprinter:atol10:CheckPrintArray&loglevel=1&com=5:-1:-1', {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Access-Control-Request-Private-Network': 'true'
+                }
+            })
+            .then(response => {
+                console.log('Ответ сервера:');
+                console.log(`Статус: ${response.status} ${response.statusText}`);
+                console.log('Заголовки ответа:');
+                for (let [key, value] of response.headers) {
+                    console.log(`  ${key}: ${value}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сети или сервера');
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Тело ответа:');
+                console.log(data);
+                showNotification('Скидка применена', 'success');
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка при применении скидки', 'error');
             });
         });
     }

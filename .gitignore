@@ -5,6 +5,10 @@
 # Логи
 logs/*.txt
 
+# Сертификаты
+server.crt
+server.key
+
 # Директории сборки
 bin/
 build/

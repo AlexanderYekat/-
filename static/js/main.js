@@ -230,12 +230,12 @@ document.addEventListener('keydown', function (event) {
 
 function sendTableDataToServer() {
     const tableData = Array.from(document.querySelector('table tbody').rows).map(row => ({
-        code: row.cells[1].textContent,
-        article: row.cells[2].textContent,
+        //code: row.cells[1].textContent,
+        //article: row.cells[2].textContent,
         name: row.cells[3].textContent,
         quantity: row.cells[4].textContent,
         price: row.cells[5].textContent,
-        sum: row.cells[6].textContent
+        //sum: row.cells[6].textContent
     }));
 
     const employeeSelect = document.getElementById('employee');
@@ -248,7 +248,7 @@ function sendTableDataToServer() {
     };
 
     // Отправка данных на локальный ресурс на порт 8843
-    const url = 'https://127.0.0.1:8443/api/print-check';
+    const url = 'http://localhost:8081/api/print-check';
     //const url = 'http://188.225.31.209:8080/api/print-check';
 
     const headers = {
@@ -270,22 +270,70 @@ function sendTableDataToServer() {
     })
     .then(response => {
         // Логируем ответ
+        console.log('Ответ сервера:', response);
         console.log('Ответ сервера:');
         console.log(`Статус: ${response.status} ${response.statusText}`);
         console.log('Заголовки ответа:');
+        console.log(response.type)
         for (let [key, value] of response.headers) {
             console.log(`  ${key}: ${value}`);
         }
-        
+        console.log(response)
+        console.log(response.body)
+        //const response = JSON.parse(requestBody.body);
+        //if (response.type === 'error') {
+        //    console.log(response.message)
+        //    if (response.data !== undefined && response.data !== 0) {
+        //        message += ` (Номер чека: ${response.data})`;
+        //    }
+        //    showNotification(response.message, 'error');
+        //} else {
+        //    let message = response.message;
+        //    if (response.data !== undefined && response.data !== 0) {
+        //        message += ` (Номер чека: ${response.data})`;
+        //    }
+        //    showNotification(message, 'success');        
+        //}
+        //return response.json();
+        // Проверяем статус ответа
         if (!response.ok) {
-            throw new Error('Ошибка сети или сервера');
-        }
-        return response.json();
+            // Если статус не 2xx, пробуем прочитать текст ошибки
+            return response.text().then(errorText => {
+                console.log(errorText)
+                showNotification(errorText,'error');
+                //throw new Error(`Ошибка HTTP: ${response.status} ${response.statusText}\n${errorText}`);
+            });
+        }      
+        // Если ответ в формате JSON, используем response.json()
+        // Если текст, используем response.text()
+        return response.text();          
     })
     .then(data => {
         console.log('Тело ответа:');
+
         console.log(data);
-        showNotification('Данные успешно отправлены', 'success');
+        // Пробуем распарсить JSON, если это возможно
+        try {
+            const jsonData = JSON.parse(data);
+
+    if (jsonData.type === 'error') {
+        let message = jsonData.message;
+        if (jsonData.data !== undefined && jsonData.data !== 0) {
+            message += ` (Номер чека: ${jsonData.data})`;
+        }
+        showNotification(message, 'error');
+    } else {
+        let message = jsonData.message || 'Данные успешно отправлены';
+        if (jsonData.data !== undefined && jsonData.data !== 0) {
+                    message += ` (Номер чека: ${jsonData.data})`;
+                    }
+                showNotification(message, 'success');
+            }
+
+        } catch (e) {
+            // Если это не JSON, просто показываем текст ответа
+            showNotification(data, 'success');
+        }
     })
     .catch(error => {
         console.error('Ошибка:', error);
@@ -294,6 +342,8 @@ function sendTableDataToServer() {
 }
 
 // Добавляем обработчик события для кнопки "Печать чека"
+
+
 document.querySelector('.button.accent').addEventListener('click', sendTableDataToServer);
 
 function showNotification(message, type = 'info') {

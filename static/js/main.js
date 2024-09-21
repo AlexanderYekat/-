@@ -254,12 +254,10 @@ function sendTableDataToServer() {
     }));
 
     const employeeSelect = document.getElementById('employee');
-    const masterSelect = document.getElementById('master');
 
     const dataToSend = {
         tableData: tableData,
-        employee: employeeSelect.value,
-        master: masterSelect.value
+        cashier: employeeSelect.value,
     };
 
     // Отправка данных на локальный ресурс на порт 8843
@@ -528,13 +526,22 @@ function sendXReportRequest() {
 function sendZReportRequest() {
     const url = 'http://localhost:8081/api/close-shift';
 
+    const employeeSelect = document.getElementById('employee');
+
+    const dataToSend = {
+        cashier: employeeSelect.value,
+    };
+
+    const requestBody = JSON.stringify(dataToSend);
+
     fetch(url, {
         method: 'POST',
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Request-Private-Network': 'true'
-        }
+        },
+        body: requestBody
     })
     .then(response => {
         console.log('Ответ сервера:', response);

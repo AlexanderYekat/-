@@ -82,6 +82,21 @@ document.addEventListener('DOMContentLoaded', function () {
             handleRowSelection(rowToSelect);
         }
     }
+
+    // Добавляем обработчик для кнопки "X-отчет"
+    const xReportButton = document.getElementById('x-report-button');
+    if (xReportButton) {
+        xReportButton.addEventListener('click', function() {
+            sendXReportRequest();
+        });
+    }    
+     // Добавляем обработчик для кнопки "Z-отчет"
+     const zReportButton = document.getElementById('z-report-button');
+     if (zReportButton) {
+         zReportButton.addEventListener('click', function() {
+             sendZReportRequest();
+         });
+    }
 });
 
 // Функция для сохранения данных
@@ -466,102 +481,88 @@ document.addEventListener('DOMContentLoaded', function() {
            }
         })
         .catch(error => console.error('Ошибка при загрузке списка сантехников:', error));
-
-    // Добавляем обработчик для кнопки "Убрать скидку"
-    const removeDiscountButton = document.querySelector('button.button:nth-child(2)');
-    if (removeDiscountButton) {
-        removeDiscountButton.addEventListener('click', function() {
-            const tableData = Array.from(document.querySelector('table tbody').rows).map(row => ({
-                code: row.cells[1].textContent,
-                article: row.cells[2].textContent,
-                name: row.cells[3].textContent,
-                quantity: row.cells[4].textContent,
-                price: row.cells[5].textContent,
-                sum: row.cells[6].textContent
-            }));
-
-            const employeeSelect = document.getElementById('employee');
-            const masterSelect = document.getElementById('master');
-
-            const dataToSend = {
-                tableData: tableData,
-                employee: employeeSelect.value,
-                master: masterSelect.value
-            };
-
-            const url = 'http://127.0.0.1:8085/api/print-check';
-
-            const headers = {
-                'Content-Type': 'application/json',
-                //'Access-Control-Request-Private-Network': 'true'
-            };
-
-            const requestBody = JSON.stringify(dataToSend);
-
-            fetch(url, {
-                method: 'POST',
-                mode: 'cors',
-                headers: headers,
-                body: requestBody
-            })
-            .then(response => {
-                console.log('Ответ сервера:');
-                console.log(`Статус: ${response.status} ${response.statusText}`);
-                console.log('Заголовки ответа:');
-                for (let [key, value] of response.headers) {
-                    console.log(`  ${key}: ${value}`);
-                }
-                
-                if (!response.ok) {
-                    throw new Error('Ошибка сети или сервера');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Тело ответа:');
-                console.log(data);
-                showNotification('Скидка убрана', 'success');
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка при отправке запроса убрать скидку', 'error');
-            });
-        });
-    }
-
-    // Добавляем обработчик для кнопки "Скидка"
-    const discountButton = document.querySelector('button.button:nth-child(1)');
-    if (discountButton) {
-        discountButton.addEventListener('click', function() {
-            fetch('http://127.0.0.1:8080/api.php?a=fiscalprinter:atol10:CheckPrintArray&loglevel=1&com=5:-1:-1', {
-                method: 'GET',
-                mode: 'cors',
-                headers: {
-                    //'Access-Control-Request-Private-Network': 'true'
-                }
-            })
-            .then(response => {
-                console.log('Ответ сервера:');
-                console.log(`Статус: ${response.status} ${response.statusText}`);
-                console.log('Заголовки ответа:');
-                for (let [key, value] of response.headers) {
-                    console.log(`  ${key}: ${value}`);
-                }
-                
-                if (!response.ok) {
-                    throw new Error('Ошибка сети или сервера');
-                }
-                return response.text();
-            })
-            .then(data => {
-                console.log('Тело ответа:');
-                console.log(data);
-                showNotification('Скидка применена', 'success');
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка при применении скидки', 'error');
-            });
-        });
-    }
 });
+
+function sendXReportRequest() {
+    const url = 'http://localhost:8081/api/x-report';
+
+    fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Request-Private-Network': 'true'
+        }
+    })
+    .then(response => {
+        console.log('Ответ сервера:', response);
+        console.log('Ответ сервера:');
+        console.log(`Статус: ${response.status} ${response.statusText}`);
+        console.log('Заголовки ответа:');
+        for (let [key, value] of response.headers) {
+            console.log(`  ${key}: ${value}`);
+        }
+        
+        if (!response.ok) {
+            return response.text().then(errorText => {
+                throw new Error(`Ошибка HTTP: ${response.status} ${response.statusText}\n${errorText}`);
+            });
+        }
+        return response.text();
+    })
+    .then(data => {
+        console.log('Тело ответа:', data);
+        try {
+            const jsonData = JSON.parse(data);
+            showNotification(jsonData.message || 'X-отчет успешно напечатан', 'success');
+        } catch (e) {
+            showNotification(data, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка при печати X-отчета: ' + error.message, 'error');
+    });
+}
+
+function sendZReportRequest() {
+    const url = 'http://localhost:8081/api/close-shift';
+
+    fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Request-Private-Network': 'true'
+        }
+    })
+    .then(response => {
+        console.log('Ответ сервера:', response);
+        console.log('Ответ сервера:');
+        console.log(`Статус: ${response.status} ${response.statusText}`);
+        console.log('Заголовки ответа:');
+        for (let [key, value] of response.headers) {
+            console.log(`  ${key}: ${value}`);
+        }
+        
+        if (!response.ok) {
+            return response.text().then(errorText => {
+                throw new Error(`Ошибка HTTP: ${response.status} ${response.statusText}\n${errorText}`);
+            });
+        }
+        return response.text();
+    })
+    .then(data => {
+        console.log('Тело ответа:', data);
+        try {
+            const jsonData = JSON.parse(data);
+            showNotification(jsonData.message || 'Z-отчет успешно напечатан', 'success');
+        } catch (e) {
+            showNotification(data, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка при печати Z-отчета: ' + error.message, 'error');
+    });
+}
